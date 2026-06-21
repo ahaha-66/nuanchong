@@ -6,7 +6,8 @@ coverage/
 .env.*
 !.env.example
 *.log
+*.tsbuildinfo
+.swc/
 .DS_Store
 apps/miniapp/dist/
 apps/api/prisma/dev.db
-
