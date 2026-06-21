@@ -1,0 +1,9 @@
+{
+  "miniprogramRoot": "dist/",
+  "projectname": "暖宠",
+  "description": "老年宠与生病宠连续照护助手",
+  "appid": "touristappid",
+  "setting": { "urlCheck": false, "es6": true, "minified": true },
+  "compileType": "miniprogram"
+}
+

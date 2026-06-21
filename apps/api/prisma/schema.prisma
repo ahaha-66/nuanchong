@@ -1,0 +1,410 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PetSpecies {
+  CAT
+  DOG
+  OTHER
+}
+enum PetSex {
+  MALE
+  FEMALE
+  UNKNOWN
+}
+enum PetRole {
+  OWNER
+  FAMILY
+  TEMP_CARER
+  VIEWER
+}
+enum OrganizationRole {
+  ADMIN
+  VET
+  NURSE
+  CUSTOMER_SERVICE
+  READ_ONLY
+}
+enum PlanStatus {
+  DRAFT
+  PENDING_CONFIRMATION
+  ACTIVE
+  PAUSED
+  SUPERSEDED
+  COMPLETED
+  CANCELLED
+}
+enum TaskKind {
+  MEDICATION
+  FEEDING
+  MEASUREMENT
+  OBSERVATION
+  OTHER
+}
+enum TaskStatus {
+  PENDING
+  CLAIMED
+  COMPLETED
+  SKIPPED
+  ABNORMAL
+  OVERDUE
+  CANCELLED
+}
+enum ExtractionStatus {
+  QUEUED
+  PROCESSING
+  NEEDS_CONFIRMATION
+  CONFIRMED
+  FAILED
+}
+enum ConsentScope {
+  CARE_PLAN
+  TASK_EXECUTIONS
+  OBSERVATIONS
+  TIMELINE
+}
+enum SupportAccessStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EXPIRED
+}
+
+model User {
+  id String @id @default(uuid()) @db.Uuid
+  email String? @unique
+  displayName String
+  passwordHash String? @map("password_hash")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  identities AuthIdentity[]
+  sessions Session[]
+  petMemberships PetMember[]
+  organizationMemberships OrganizationMember[]
+  @@map("users")
+}
+
+model AuthIdentity {
+  id String @id @default(uuid()) @db.Uuid
+  userId String @map("user_id") @db.Uuid
+  provider String
+  subject String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([provider, subject])
+  @@map("auth_identities")
+}
+
+model Session {
+  id String @id @default(uuid()) @db.Uuid
+  userId String @map("user_id") @db.Uuid
+  refreshTokenHash String @map("refresh_token_hash")
+  expiresAt DateTime @map("expires_at") @db.Timestamptz
+  revokedAt DateTime? @map("revoked_at") @db.Timestamptz
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@map("sessions")
+}
+
+model Organization {
+  id String @id @default(uuid()) @db.Uuid
+  name String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  members OrganizationMember[]
+  plans CarePlan[]
+  consents ConsentGrant[]
+  @@map("organizations")
+}
+
+model OrganizationMember {
+  id String @id @default(uuid()) @db.Uuid
+  organizationId String @map("organization_id") @db.Uuid
+  userId String @map("user_id") @db.Uuid
+  role OrganizationRole
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([organizationId, userId])
+  @@map("organization_members")
+}
+
+model Pet {
+  id String @id @default(uuid()) @db.Uuid
+  name String
+  species PetSpecies
+  sex PetSex @default(UNKNOWN)
+  birthDate DateTime? @map("birth_date") @db.Date
+  version Int @default(1)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  members PetMember[]
+  plans CarePlan[]
+  tasks TaskInstance[]
+  observations ObservationRecord[]
+  timeline TimelineEvent[]
+  consents ConsentGrant[]
+  media MediaAsset[]
+  @@map("pets")
+}
+
+model PetMember {
+  id String @id @default(uuid()) @db.Uuid
+  petId String @map("pet_id") @db.Uuid
+  userId String @map("user_id") @db.Uuid
+  role PetRole
+  expiresAt DateTime? @map("expires_at") @db.Timestamptz
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  pet Pet @relation(fields: [petId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@unique([petId, userId])
+  @@map("pet_members")
+}
+
+model MemberInvitation {
+  id String @id @default(uuid()) @db.Uuid
+  petId String @map("pet_id") @db.Uuid
+  email String
+  role PetRole
+  tokenHash String @unique @map("token_hash")
+  expiresAt DateTime @map("expires_at") @db.Timestamptz
+  acceptedAt DateTime? @map("accepted_at") @db.Timestamptz
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  @@map("member_invitations")
+}
+
+model CarePlan {
+  id String @id @default(uuid()) @db.Uuid
+  petId String @map("pet_id") @db.Uuid
+  organizationId String @map("organization_id") @db.Uuid
+  title String
+  timezone String @default("Asia/Shanghai")
+  status PlanStatus @default(DRAFT)
+  version Int @default(1)
+  currentPlanVersionId String? @map("current_plan_version_id") @db.Uuid
+  createdById String @map("created_by_id") @db.Uuid
+  confirmedById String? @map("confirmed_by_id") @db.Uuid
+  confirmedAt DateTime? @map("confirmed_at") @db.Timestamptz
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  pet Pet @relation(fields: [petId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+  versions PlanVersion[]
+  taskDefinitions TaskDefinition[]
+  @@map("care_plans")
+}
+
+model PlanVersion {
+  id String @id @default(uuid()) @db.Uuid
+  carePlanId String @map("care_plan_id") @db.Uuid
+  number Int
+  snapshot Json
+  requiresConfirmation Boolean @default(true) @map("requires_confirmation")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  carePlan CarePlan @relation(fields: [carePlanId], references: [id], onDelete: Cascade)
+  definitions TaskDefinition[]
+  @@unique([carePlanId, number])
+  @@map("plan_versions")
+}
+
+model TaskDefinition {
+  id String @id @default(uuid()) @db.Uuid
+  carePlanId String @map("care_plan_id") @db.Uuid
+  planVersionId String @map("plan_version_id") @db.Uuid
+  title String
+  kind TaskKind
+  scheduleTimes String[] @map("schedule_times")
+  startDate DateTime @map("start_date") @db.Date
+  endDate DateTime @map("end_date") @db.Date
+  instructions String?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  carePlan CarePlan @relation(fields: [carePlanId], references: [id], onDelete: Cascade)
+  planVersion PlanVersion @relation(fields: [planVersionId], references: [id], onDelete: Cascade)
+  instances TaskInstance[]
+  @@map("task_definitions")
+}
+
+model TaskInstance {
+  id String @id @default(uuid()) @db.Uuid
+  petId String @map("pet_id") @db.Uuid
+  taskDefinitionId String @map("task_definition_id") @db.Uuid
+  scheduledAt DateTime @map("scheduled_at") @db.Timestamptz
+  status TaskStatus @default(PENDING)
+  claimedById String? @map("claimed_by_id") @db.Uuid
+  claimedAt DateTime? @map("claimed_at") @db.Timestamptz
+  version Int @default(1)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  pet Pet @relation(fields: [petId], references: [id], onDelete: Cascade)
+  definition TaskDefinition @relation(fields: [taskDefinitionId], references: [id], onDelete: Cascade)
+  executions TaskExecution[]
+  @@unique([taskDefinitionId, scheduledAt, petId])
+  @@map("task_instances")
+}
+
+model TaskExecution {
+  id String @id @default(uuid()) @db.Uuid
+  taskInstanceId String @map("task_instance_id") @db.Uuid
+  actorUserId String @map("actor_user_id") @db.Uuid
+  outcome TaskStatus
+  note String?
+  correctsExecutionId String? @map("corrects_execution_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  task TaskInstance @relation(fields: [taskInstanceId], references: [id], onDelete: Cascade)
+  @@map("task_executions")
+}
+
+model ObservationDefinition {
+  id String @id @default(uuid()) @db.Uuid
+  organizationId String? @map("organization_id") @db.Uuid
+  name String
+  category String
+  unit String?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  @@map("observation_definitions")
+}
+
+model ObservationRecord {
+  id String @id @default(uuid()) @db.Uuid
+  petId String @map("pet_id") @db.Uuid
+  actorUserId String @map("actor_user_id") @db.Uuid
+  category String
+  occurredAt DateTime @map("occurred_at") @db.Timestamptz
+  summary String
+  value String?
+  unit String?
+  sourceExtractionId String? @map("source_extraction_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  pet Pet @relation(fields: [petId], references: [id], onDelete: Cascade)
+  @@map("observation_records")
+}
+
+model AiExtraction {
+  id String @id @default(uuid()) @db.Uuid
+  petId String @map("pet_id") @db.Uuid
+  actorUserId String @map("actor_user_id") @db.Uuid
+  mediaAssetId String? @map("media_asset_id") @db.Uuid
+  sourceText String @map("source_text")
+  transcript String?
+  status ExtractionStatus @default(QUEUED)
+  result Json?
+  model String?
+  promptVersion String @default("observation-v1") @map("prompt_version")
+  schemaVersion String @default("1") @map("schema_version")
+  errorMessage String? @map("error_message")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  @@map("ai_extractions")
+}
+
+model TimelineEvent {
+  id String @id @default(uuid()) @db.Uuid
+  petId String @map("pet_id") @db.Uuid
+  eventType String @map("event_type")
+  occurredAt DateTime @map("occurred_at") @db.Timestamptz
+  sourceType String @map("source_type")
+  sourceId String @map("source_id") @db.Uuid
+  summary String
+  metadata Json @default("{}")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  pet Pet @relation(fields: [petId], references: [id], onDelete: Cascade)
+  @@index([petId, occurredAt])
+  @@map("timeline_events")
+}
+
+model ConsentGrant {
+  id String @id @default(uuid()) @db.Uuid
+  petId String @map("pet_id") @db.Uuid
+  organizationId String @map("organization_id") @db.Uuid
+  grantedById String @map("granted_by_id") @db.Uuid
+  scopes ConsentScope[]
+  startsAt DateTime @map("starts_at") @db.Timestamptz
+  endsAt DateTime @map("ends_at") @db.Timestamptz
+  revokedAt DateTime? @map("revoked_at") @db.Timestamptz
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  pet Pet @relation(fields: [petId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  @@index([petId, organizationId])
+  @@map("consent_grants")
+}
+
+model MediaAsset {
+  id String @id @default(uuid()) @db.Uuid
+  petId String @map("pet_id") @db.Uuid
+  ownerUserId String @map("owner_user_id") @db.Uuid
+  objectKey String @unique @map("object_key")
+  contentType String @map("content_type")
+  byteSize Int @map("byte_size")
+  checksum String?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  pet Pet @relation(fields: [petId], references: [id], onDelete: Cascade)
+  @@map("media_assets")
+}
+
+model AuditLog {
+  id String @id @default(uuid()) @db.Uuid
+  actorUserId String? @map("actor_user_id") @db.Uuid
+  organizationId String? @map("organization_id") @db.Uuid
+  supportAccessId String? @map("support_access_id") @db.Uuid
+  action String
+  resourceType String @map("resource_type")
+  resourceId String? @map("resource_id") @db.Uuid
+  outcome String
+  metadata Json @default("{}")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  @@index([actorUserId, createdAt])
+  @@map("audit_logs")
+}
+
+model SupportAccessRequest {
+  id String @id @default(uuid()) @db.Uuid
+  requesterId String @map("requester_id") @db.Uuid
+  approverId String? @map("approver_id") @db.Uuid
+  petId String? @map("pet_id") @db.Uuid
+  resourceType String? @map("resource_type")
+  resourceId String? @map("resource_id") @db.Uuid
+  reason String
+  status SupportAccessStatus @default(PENDING)
+  approvedAt DateTime? @map("approved_at") @db.Timestamptz
+  expiresAt DateTime? @map("expires_at") @db.Timestamptz
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  @@map("support_access_requests")
+}
+
+model IdempotencyRecord {
+  id String @id @default(uuid()) @db.Uuid
+  actorUserId String @map("actor_user_id") @db.Uuid
+  key String
+  route String
+  response Json
+  expiresAt DateTime @map("expires_at") @db.Timestamptz
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  @@unique([actorUserId, key, route])
+  @@map("idempotency_records")
+}
+
+model CareTemplate {
+  id String @id @default(uuid()) @db.Uuid
+  organizationId String @map("organization_id") @db.Uuid
+  name String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  versions TemplateVersion[]
+  @@map("care_templates")
+}
+
+model TemplateVersion {
+  id String @id @default(uuid()) @db.Uuid
+  templateId String @map("template_id") @db.Uuid
+  number Int
+  content Json
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  template CareTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  @@unique([templateId, number])
+  @@map("template_versions")
+}

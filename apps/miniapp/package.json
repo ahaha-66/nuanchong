@@ -1,0 +1,37 @@
+{
+  "name": "@nuanchong/miniapp",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "taro build --type weapp --watch",
+    "build": "taro build --type weapp",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@nuanchong/contracts": "workspace:*",
+    "@tarojs/components": "^4.1.2",
+    "@tarojs/plugin-framework-react": "^4.1.2",
+    "@tarojs/plugin-platform-weapp": "^4.1.2",
+    "@tarojs/react": "^4.1.2",
+    "@tarojs/runtime": "^4.1.2",
+    "@tarojs/shared": "^4.1.2",
+    "@tarojs/taro": "^4.1.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@babel/preset-react": "^7.27.1",
+    "@babel/preset-typescript": "^7.27.1",
+    "@tarojs/cli": "^4.1.2",
+    "@tarojs/webpack5-runner": "^4.1.2",
+    "@types/react": "^18.3.23",
+    "babel-preset-taro": "^4.1.2",
+    "less": "^4.2.2",
+    "style-loader": "^4.0.0",
+    "sass": "^1.89.2",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
+  }
+}

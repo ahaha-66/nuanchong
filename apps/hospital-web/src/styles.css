@@ -1,0 +1,26 @@
+:root { font-family: Inter, "Microsoft YaHei", sans-serif; color: #17221d; background: #eef2f0; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+.login-shell { min-height: 100vh; display: grid; place-items: center; background: #eef2f0; }
+.login-panel { width: min(420px, calc(100vw - 32px)); background: white; border: 1px solid #d9e1dd; border-radius: 8px; padding: 36px; box-shadow: 0 14px 40px rgba(29, 52, 41, .08); }
+.wordmark { display: flex; align-items: baseline; gap: 10px; color: #176b4d; margin-bottom: 30px; }
+.wordmark span { font-size: 25px; font-weight: 750; }
+.wordmark small { color: #68756e; }
+.app-shell { min-height: 100vh; }
+.sidebar { border-right: 1px solid #dce3df; position: relative; }
+.sidebar-brand { height: 72px; margin: 0; padding: 20px 24px; border-bottom: 1px solid #e5eae7; }
+.logout { position: absolute; left: 20px; bottom: 20px; display: flex; align-items: center; gap: 8px; border: 0; background: transparent; color: #66736c; cursor: pointer; }
+.topbar { height: 88px; padding: 16px 28px; background: #fff; border-bottom: 1px solid #dce3df; display: flex; align-items: center; justify-content: space-between; }
+.topbar h4, .detail-title h3 { margin: 0 !important; }
+.content { padding: 22px 28px 28px; }
+.workspace { margin-top: 18px; display: grid; grid-template-columns: 260px minmax(0, 1fr); border: 1px solid #dce3df; background: white; min-height: calc(100vh - 170px); }
+.patient-list { border-right: 1px solid #dce3df; }
+.panel-heading { height: 54px; padding: 0 18px; display: flex; align-items: center; justify-content: space-between; font-weight: 650; border-bottom: 1px solid #e5eae7; }
+.patient { padding: 14px 18px !important; cursor: pointer; gap: 12px; }
+.patient.active { background: #e8f3ee; color: #176b4d; border-right: 3px solid #176b4d; }
+.patient div { display: flex; flex-direction: column; }
+.patient small { color: #78847e; margin-top: 2px; }
+.patient-detail { padding: 26px 30px; min-width: 0; }
+.detail-title { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; }
+.section-heading { margin-top: 34px !important; }
+@media (max-width: 800px) { .sidebar { display: none; } .content { padding: 14px; } .workspace { grid-template-columns: 1fr; } .patient-list { border-right: 0; border-bottom: 1px solid #dce3df; } .topbar { padding: 14px; } }

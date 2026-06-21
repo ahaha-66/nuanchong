@@ -1,0 +1,6 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": { "module": "ESNext", "moduleResolution": "Bundler", "jsx": "react-jsx", "types": ["@tarojs/taro", "@tarojs/components"] },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "config/**/*.ts"]
+}
+

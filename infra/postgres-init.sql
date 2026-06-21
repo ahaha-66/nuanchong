@@ -1,0 +1,8 @@
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname = 'nuanchong_app') THEN
+    CREATE ROLE nuanchong_app LOGIN PASSWORD 'nuanchong_app' NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOBYPASSRLS;
+  END IF;
+END $$;
+GRANT CONNECT ON DATABASE nuanchong TO nuanchong_app;
+
