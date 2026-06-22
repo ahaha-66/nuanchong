@@ -22,7 +22,10 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (!user?.passwordHash || !(await argon2.verify(user.passwordHash, password))) throw new UnauthorizedException({ code: 'UNAUTHORIZED' });
     if (organizationId) {
-      const member = await this.prisma.organizationMember.findUnique({ where: { organizationId_userId: { organizationId, userId: user.id } } });
+      const member = await this.prisma.withActor(
+        { userId: user.id, organizationId },
+        (tx) => tx.organizationMember.findUnique({ where: { organizationId_userId: { organizationId, userId: user.id } } }),
+      );
       if (!member) throw new UnauthorizedException({ code: 'UNAUTHORIZED' });
     }
     return { user, organizationId, ...(await this.issue(user.id)) };
@@ -48,4 +51,3 @@ export class AuthService {
     return this.issue(session.userId);
   }
 }
-

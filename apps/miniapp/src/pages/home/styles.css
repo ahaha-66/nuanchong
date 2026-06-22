@@ -1,0 +1,34 @@
+.page { padding: 18px; background: #f4f5f3; min-height: 100vh; }
+.row { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 18px; }
+.brand { font-size: 28px; font-weight: 700; color: #176b4d; }
+.muted { color: #5d6b64; font-size: 14px; margin-top: 4px; }
+.status { padding: 10px 12px; border: 1px solid #dbe7df; border-radius: 12px; background: white; color: #176b4d; }
+.section { margin-top: 18px; }
+.card { background: white; border-radius: 18px; padding: 18px; box-shadow: 0 4px 24px rgba(76, 112, 91, 0.06); }
+.section-title { font-size: 16px; font-weight: 700; margin-bottom: 14px; }
+.input { width: 100%; padding: 12px 14px; border-radius: 14px; border: 1px solid #dbe7df; background: white; }
+.button { margin-top: 12px; width: 100%; background: #176b4d; color: white; border-radius: 12px; padding: 12px 0; text-align: center; }
+.button-secondary { background: #f0f2f0; color: #23372f; }
+.warning { background: #fff7ed; border: 1px solid #ffecce; color: #8a6439; border-radius: 16px; padding: 14px; line-height: 1.5; }
+.text-link { color: #176b4d; font-weight: 700; margin-top: 6px; }
+.care-hero { background: linear-gradient(180deg, #f6fbf8 0%, #ecf7f1 100%); border-radius: 20px; padding: 20px; }
+.row > View:first-child { flex: 1; }
+.eyebrow { color: #607565; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; }
+.care-stage { font-size: 20px; font-weight: 700; color: #175f44; }
+.progress-number { font-size: 24px; font-weight: 700; color: #1b4632; }
+.care-source { color: #5d6b64; font-size: 14px; margin-top: 14px; }
+.care-hero-summary { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+.summary-pill { padding: 10px 14px; border-radius: 14px; background: white; border: 1px solid #dbe7df; color: #2f5347; font-size: 13px; }
+.summary-pill.warning { background: #fff7ed; border-color: #ffebd1; color: #8d5e33; }
+.summary-pill.info { background: #eef7ff; border-color: #bfd7f0; color: #33638a; }
+.task-card { margin-bottom: 12px; padding: 16px; border-radius: 18px; background: white; }
+.task-kind { font-size: 12px; color: #4b6d58; margin-bottom: 10px; }
+.task-content { flex: 1; }
+.muted { color: #687268; font-size: 13px; margin-top: 8px; }
+.empty-success { text-align: center; color: #476a55; }
+.focus-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+.focus-chip { background: white; border: 1px solid #dbe7df; border-radius: 14px; padding: 10px 14px; color: #2f4d3f; font-size: 14px; }
+.action-grid { display: flex; gap: 12px; margin-top: 16px; }
+.safety-note { margin-top: 18px; color: #5c6e63; font-size: 12px; }
+.event-card { margin-bottom: 10px; padding: 14px; border-radius: 16px; background: white; }
+.event-summary { font-weight: 600; }

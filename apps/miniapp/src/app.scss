@@ -14,4 +14,34 @@ page { background: #f4f6f5; color: #17221d; font-family: -apple-system, BlinkMac
 .row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .status { font-size: 22px; color: #176b4d; background: #e5f3ec; padding: 6px 12px; border-radius: 8px; }
 .warning { color: #8b4a19; background: #fff2df; padding: 16px; border-radius: 8px; font-size: 24px; }
-
+.care-hero { color: #fff; background: linear-gradient(135deg, #176b4d, #2f8465); border-radius: 18px; padding: 28px; box-shadow: 0 12px 30px rgba(23, 107, 77, .18); }
+.eyebrow { font-size: 22px; opacity: .75; }
+.care-stage { font-size: 38px; font-weight: 700; margin: 8px 0 24px; }
+.progress-number { font-size: 36px; font-weight: 700; }
+.care-source { font-size: 22px; opacity: .78; margin-top: 14px; }
+.text-link { display: inline; margin-left: 10px; color: #176b4d; font-weight: 600; }
+.task-card { position: relative; padding-top: 46px; }
+.task-kind { position: absolute; left: 24px; top: 14px; color: #176b4d; font-size: 20px; font-weight: 600; }
+.task-content { flex: 1; min-width: 0; }
+.task-action { flex: 0 0 auto; margin: 0; }
+.empty-success { color: #39745c; background: #edf7f2; border-color: #d3e9dd; text-align: center; }
+.focus-grid, .quick-grid, .action-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.focus-chip { padding: 18px 10px; background: #fff; border: 1px solid #dce3df; border-radius: 10px; text-align: center; font-size: 24px; }
+.action-grid { grid-template-columns: 1fr 1fr; }
+.action-grid .button { width: 100%; margin: 0; }
+.quick-item { padding: 24px 8px; text-align: center; background: #fff; border: 1px solid #dce3df; border-radius: 12px; font-size: 23px; }
+.quick-icon { width: 54px; height: 54px; margin: 0 auto 12px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #176b4d; background: #e6f2ec; font-weight: 700; }
+.safety-note { margin-top: 34px; padding: 20px 0; border-top: 1px solid #dce3df; color: #7d8882; font-size: 21px; line-height: 1.6; }
+.followup-banner { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 22px; border: 1px solid #d9e7e0; border-radius: 12px; background: #fff; }
+.followup-banner .button { margin: 0; flex: 0 0 auto; }
+.followup-title { margin-bottom: 5px; font-weight: 650; }
+.followup-form { border-top: 6px solid #176b4d; }
+.question { margin: 24px 0; font-size: 26px; }
+.picker-value { margin-top: 10px; padding: 18px; color: #176b4d; background: #f1f6f3; border-radius: 8px; }
+.question-input { margin-top: 10px; margin-bottom: 0; }
+.care-hero-summary { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+.summary-pill { padding: 10px 14px; border-radius: 14px; background: rgba(255,255,255,0.95); color: #1f6f4a; font-size: 14px; border: 1px solid #d7e6de; }
+.summary-pill.warning { background: #fff4e5; color: #8e5b2f; border-color: #ffe6c8; }
+.summary-pill.info { background: #eef4ff; color: #315b8d; border-color: #c9d8ef; }
+.event-card { margin-bottom: 12px; padding: 16px; border-radius: 14px; background: #fff; border: 1px solid #e0e8e4; }
+.event-summary { font-weight: 700; color: #1f583f; }

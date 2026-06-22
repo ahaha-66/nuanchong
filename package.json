@@ -5,16 +5,17 @@
   "packageManager": "pnpm@10.34.4",
   "scripts": {
     "build": "turbo build",
-    "dev": "turbo dev",
+    "dev": "dotenv -e .env -- turbo dev",
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",
     "test": "turbo test",
-    "test:integration": "pnpm --filter @nuanchong/api test:integration",
-    "db:generate": "pnpm --filter @nuanchong/api prisma:generate",
-    "db:migrate": "pnpm --filter @nuanchong/api prisma:migrate",
-    "db:seed": "pnpm --filter @nuanchong/api prisma:seed"
+    "test:integration": "dotenv -e .env -- pnpm --filter @nuanchong/api test:integration",
+    "db:generate": "dotenv -e .env -- pnpm --filter @nuanchong/api prisma:generate",
+    "db:migrate": "dotenv -e .env -- pnpm --filter @nuanchong/api prisma:migrate",
+    "db:seed": "dotenv -e .env -- pnpm --filter @nuanchong/api prisma:seed"
   },
   "devDependencies": {
+    "dotenv-cli": "^8.0.0",
     "turbo": "^2.5.4",
     "typescript": "^5.8.3"
   },

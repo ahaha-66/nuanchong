@@ -19,6 +19,47 @@ export class PetsService {
       return pet;
     });
   }
+  careCard(actor: RequestActor, petId: string) {
+    return this.prisma.withActor(actor, async tx => {
+      const now = new Date();
+      const dayStart = new Date(now); dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(now); dayEnd.setHours(23, 59, 59, 999);
+      const pet = await tx.pet.findUnique({ where: { id: petId } });
+      if (!pet) throw new NotFoundException({ code: 'NOT_FOUND' });
+      const [plans, tasks, observations, recentEvents, followups] = await Promise.all([
+        tx.carePlan.findMany({ where: { petId, status: { in: ['ACTIVE', 'PENDING_CONFIRMATION'] } }, include: { taskDefinitions: true }, orderBy: { updatedAt: 'desc' } }),
+        tx.taskInstance.findMany({ where: { petId, scheduledAt: { gte: dayStart, lte: dayEnd } }, include: { definition: true, executions: { orderBy: { createdAt: 'desc' }, take: 1 } }, orderBy: { scheduledAt: 'asc' } }),
+        tx.observationRecord.findMany({ where: { petId, occurredAt: { gte: new Date(now.getTime() - 7 * 86400000) } }, orderBy: { occurredAt: 'desc' }, take: 20 }),
+        tx.timelineEvent.findMany({ where: { petId }, orderBy: { occurredAt: 'desc' }, take: 5 }),
+        tx.followupInstance.findMany({ where: { petId, status: { in: ['SENT', 'SUBMITTED', 'CLAIMED'] }, expiresAt: { gt: now } }, include: { definition: true }, orderBy: { scheduledAt: 'asc' } }),
+      ]);
+      const completed = tasks.filter(task => task.status === 'COMPLETED').length;
+      return {
+        pet,
+        stage: plans.some(plan => /术后|伤口/.test(plan.title)) ? '术后恢复' : plans.length ? '持续照护' : '基础观察',
+        activePlans: plans.filter(plan => plan.status === 'ACTIVE'),
+        pendingPlans: plans.filter(plan => plan.status === 'PENDING_CONFIRMATION'),
+        tasks,
+        progress: { completed, total: tasks.length, rate: tasks.length ? Math.round(completed / tasks.length * 100) : 0 },
+        focusItems: Array.from(new Set(plans.flatMap(plan => plan.taskDefinitions.filter(item => ['OBSERVATION', 'MEASUREMENT'].includes(item.kind)).map(item => item.title)))).slice(0, 3),
+        recentObservations: observations,
+        recentEvents,
+        followups,
+        disclaimer: '暖宠协助记录与协作，不替代兽医诊断。医院连接不代表实时监控。',
+      };
+    });
+  }
+  createObservation(actor: RequestActor, petId: string, data: { category: string; occurredAt?: string; summary: string; value?: string; unit?: string }) {
+    return this.prisma.withActor(actor, async tx => {
+      const member = await tx.petMember.findFirst({ where: { petId, userId: actor.userId, OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }] } });
+      if (!member) throw new ForbiddenException({ code: 'FORBIDDEN' });
+      const occurredAt = data.occurredAt ? new Date(data.occurredAt) : new Date();
+      const observation = await tx.observationRecord.create({ data: { petId, actorUserId: actor.userId, category: data.category, occurredAt, summary: data.summary, value: data.value, unit: data.unit } });
+      await tx.timelineEvent.create({ data: { petId, eventType: 'OBSERVATION', occurredAt, sourceType: 'OBSERVATION', sourceId: observation.id, summary: data.summary, metadata: { category: data.category, value: data.value ?? null, unit: data.unit ?? null } } });
+      await audit(tx, actor, 'OBSERVATION_CREATED', 'observation_record', observation.id, 'SUCCESS', { category: data.category });
+      return observation;
+    });
+  }
   async invite(actor: RequestActor, petId: string, data: { email: string; role: PetRole; expiresAt?: string }) {
     return this.prisma.withActor(actor, async tx => {
       const owner = await tx.petMember.findFirst({ where: { petId, userId: actor.userId, role: 'OWNER' } });

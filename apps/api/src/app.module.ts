@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
+import { resolve } from 'node:path';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { AiModule } from './ai/ai.module';
@@ -12,9 +13,11 @@ import { ConsentsModule } from './consents/consents.module';
 import { TimelineModule } from './timeline/timeline.module';
 import { OrganizationsModule } from './organizations/organizations.module';
 import { MediaModule } from './media/media.module';
+import { TemplatesModule } from './templates/templates.module';
+import { FollowupsModule } from './followups/followups.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), AuthModule, PetsModule, CarePlansModule, TasksModule, AiModule, ConsentsModule, TimelineModule, OrganizationsModule, MediaModule],
+  imports: [ConfigModule.forRoot({ isGlobal: true, envFilePath: resolve(__dirname, '../../../.env') }), AuthModule, PetsModule, CarePlansModule, TasksModule, AiModule, ConsentsModule, TimelineModule, OrganizationsModule, MediaModule, TemplatesModule, FollowupsModule],
   providers: [PrismaService, { provide: APP_GUARD, useClass: JwtAuthGuard }],
   exports: [PrismaService],
 })

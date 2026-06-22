@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("MIGRATION_DATABASE_URL")
 }
 
 enum PetSpecies {
@@ -74,6 +75,23 @@ enum SupportAccessStatus {
   REJECTED
   EXPIRED
 }
+enum TemplateReviewStatus {
+  DRAFT
+  IN_REVIEW
+  APPROVED
+  REJECTED
+  PUBLISHED
+  RETIRED
+}
+enum FollowupStatus {
+  SCHEDULED
+  SENT
+  SUBMITTED
+  CLAIMED
+  COMPLETED
+  EXPIRED
+  CANCELLED
+}
 
 model User {
   id String @id @default(uuid()) @db.Uuid
@@ -119,6 +137,8 @@ model Organization {
   members OrganizationMember[]
   plans CarePlan[]
   consents ConsentGrant[]
+  followupDefinitions FollowupDefinition[]
+  followups FollowupInstance[]
   @@map("organizations")
 }
 
@@ -150,6 +170,7 @@ model Pet {
   timeline TimelineEvent[]
   consents ConsentGrant[]
   media MediaAsset[]
+  followups FollowupInstance[]
   @@map("pets")
 }
 
@@ -393,6 +414,9 @@ model CareTemplate {
   id String @id @default(uuid()) @db.Uuid
   organizationId String @map("organization_id") @db.Uuid
   name String
+  category String
+  diseaseTag String? @map("disease_tag")
+  description String?
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
   versions TemplateVersion[]
   @@map("care_templates")
@@ -403,8 +427,57 @@ model TemplateVersion {
   templateId String @map("template_id") @db.Uuid
   number Int
   content Json
+  createdById String? @map("created_by_id") @db.Uuid
+  reviewStatus TemplateReviewStatus @default(DRAFT) @map("review_status")
+  reviewerId String? @map("reviewer_id") @db.Uuid
+  reviewNote String? @map("review_note")
+  reviewedAt DateTime? @map("reviewed_at") @db.Timestamptz
+  publishedAt DateTime? @map("published_at") @db.Timestamptz
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
   template CareTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
   @@unique([templateId, number])
   @@map("template_versions")
+}
+
+model FollowupDefinition {
+  id String @id @default(uuid()) @db.Uuid
+  organizationId String @map("organization_id") @db.Uuid
+  title String
+  version Int @default(1)
+  questionSchema Json @map("question_schema")
+  status String @default("ACTIVE")
+  createdById String @map("created_by_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  instances FollowupInstance[]
+  @@index([organizationId, status])
+  @@map("followup_definitions")
+}
+
+model FollowupInstance {
+  id String @id @default(uuid()) @db.Uuid
+  petId String @map("pet_id") @db.Uuid
+  organizationId String @map("organization_id") @db.Uuid
+  definitionId String @map("definition_id") @db.Uuid
+  definitionVersion Int @map("definition_version")
+  status FollowupStatus @default(SCHEDULED)
+  assignedToId String? @map("assigned_to_id") @db.Uuid
+  scheduledAt DateTime @map("scheduled_at") @db.Timestamptz
+  sentAt DateTime? @map("sent_at") @db.Timestamptz
+  submittedAt DateTime? @map("submitted_at") @db.Timestamptz
+  claimedAt DateTime? @map("claimed_at") @db.Timestamptz
+  completedAt DateTime? @map("completed_at") @db.Timestamptz
+  expiresAt DateTime @map("expires_at") @db.Timestamptz
+  responsePayload Json? @map("response_payload")
+  completionNote String? @map("completion_note")
+  nextVisitAt DateTime? @map("next_visit_at") @db.Timestamptz
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  pet Pet @relation(fields: [petId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  definition FollowupDefinition @relation(fields: [definitionId], references: [id], onDelete: Restrict)
+  @@index([organizationId, status, scheduledAt])
+  @@index([petId, status])
+  @@map("followup_instances")
 }
